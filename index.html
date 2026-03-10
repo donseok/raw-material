@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>철스크랩 수급 계획 및 구매 관리 시스템 - 동국제강</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="css/variables.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">동국제강 <span>DK</span></div>
+    <div class="header-sub">철스크랩 수급 계획 및 구매 관리 시스템</div>
+  </div>
+  <div class="header-right">
+    <div class="date" id="currentDate"></div>
+    <div class="user">원료기획팀 | 김철호 과장</div>
+  </div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" data-tab="plan">수급계획</button>
+  <button class="tab-btn" data-tab="alloc">공장배분</button>
+  <button class="tab-btn" data-tab="order">발주관리</button>
+  <button class="tab-btn" data-tab="supplier">거래처관리</button>
+  <button class="tab-btn" data-tab="import">수입계약</button>
+  <button class="tab-btn" data-tab="inventory">재고현황</button>
+  <button class="tab-btn" data-tab="stats">구매실적</button>
+</nav>
+
+<div class="content">
+
+<!-- ==================== 수급계획 ==================== -->
+<div class="tab-content active" id="tab-plan">
+
+  <div class="kpi-row" id="planKpiRow">
+    <div class="kpi-card" id="planKpi1"><div class="kpi-label">총 계획량</div><div class="kpi-value">270<small>만 톤</small></div><div class="kpi-sub">연간 합계 기준</div></div>
+    <div class="kpi-card accent" id="planKpi2"><div class="kpi-label">국산 비율</div><div class="kpi-value">80<small>%</small></div><div class="kpi-sub">216만 톤</div></div>
+    <div class="kpi-card success" id="planKpi3"><div class="kpi-label">수입 비율</div><div class="kpi-value">20<small>%</small></div><div class="kpi-sub">54만 톤</div></div>
+    <div class="kpi-card warning" id="planKpi4"><div class="kpi-label">평균 달성률</div><div class="kpi-value">94.2<small>%</small></div><div class="kpi-sub">실적 있는 월 기준</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>국산/수입 비율 설정</div>
+      <div class="slider-group">
+        <label>국산 비율 <span id="domesticVal">80%</span></label>
+        <input type="range" min="50" max="100" value="80" id="domesticSlider" oninput="updateRatio()">
+      </div>
+      <div class="slider-group">
+        <label>수입 비율 <span id="importVal">20%</span></label>
+        <input type="range" min="0" max="50" value="20" id="importSlider" disabled>
+      </div>
+      <div class="slider-group">
+        <label>월간 목표 물량 <span id="monthlyTarget">225,000톤</span></label>
+        <input type="range" min="180000" max="280000" step="5000" value="225000" id="monthlySlider" oninput="updateMonthly()">
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-primary" onclick="alert('수급계획이 저장되었습니다.')">계획 저장</button>
+        <button class="btn btn-outline" style="margin-left:8px">이전 계획 불러오기</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>월별 계획 대비 실적</div>
+      <div class="chart-container"><canvas id="planChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-toolbar">
+      <div class="card-title" style="margin:0"><div class="icon"></div>2026년 월간 수급 계획</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="save-indicator" id="planSaveIndicator">✓ 저장됨</span>
+        <span class="table-hint"><kbd>Ctrl</kbd>+<kbd>V</kbd> 엑셀 붙여넣기 &nbsp;|&nbsp; 더블클릭으로 셀 편집</span>
+        <button class="btn btn-outline btn-sm" onclick="resetPlanData()">초기화</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+    <table class="editable-table" id="planTableWrap" tabindex="0">
+      <thead><tr><th>월</th><th class="text-right">계획(톤)</th><th class="text-right">국산(톤)</th><th class="text-right">수입(톤)</th><th class="text-right">실적(톤)</th><th class="text-right">달성률</th><th>상태</th></tr></thead>
+      <tbody id="planTable"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 공장배분 ==================== -->
+<div class="tab-content" id="tab-alloc">
+
+  <div class="kpi-row" id="allocKpiRow">
+    <div class="kpi-card" id="allocKpi1"><div class="kpi-label">인천공장 배분 비율</div><div class="kpi-value">60<small>%</small></div><div class="kpi-sub">월 135,000톤 배정</div></div>
+    <div class="kpi-card accent" id="allocKpi2"><div class="kpi-label">포항공장 배분 비율</div><div class="kpi-value">40<small>%</small></div><div class="kpi-sub">월 90,000톤 배정</div></div>
+    <div class="kpi-card success" id="allocKpi3"><div class="kpi-label">인천 최근월 입고량</div><div class="kpi-value">128,400<small>톤</small></div><div class="kpi-sub">달성률 95.1%</div></div>
+    <div class="kpi-card warning" id="allocKpi4"><div class="kpi-label">포항 최근월 입고량</div><div class="kpi-value">83,700<small>톤</small></div><div class="kpi-sub">달성률 93.0%</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>인천공장 배분 현황</div>
+      <div style="margin-bottom:12px" id="incheonProgressWrap">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>전체 달성률</span><span style="font-weight:700" id="incheonRateLabel">95.1%</span></div>
+        <div class="progress-bar"><div class="progress-fill blue" style="width:95.1%" id="incheonProgressBar">95.1%</div></div>
+      </div>
+      <div class="chart-container chart-sm"><canvas id="incheonChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>포항공장 배분 현황</div>
+      <div style="margin-bottom:12px" id="pohangProgressWrap">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>전체 달성률</span><span style="font-weight:700" id="pohangRateLabel">93.0%</span></div>
+        <div class="progress-bar"><div class="progress-fill orange" style="width:93%" id="pohangProgressBar">93.0%</div></div>
+      </div>
+      <div class="chart-container chart-sm"><canvas id="pohangChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-toolbar">
+      <div class="card-title" style="margin:0"><div class="icon"></div>월별 공장 배분 실적</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="save-indicator" id="allocSaveIndicator">✓ 저장됨</span>
+        <span class="table-hint"><kbd>Ctrl</kbd>+<kbd>V</kbd> 엑셀 붙여넣기 &nbsp;|&nbsp; 더블클릭으로 셀 편집</span>
+        <button class="btn btn-outline btn-sm" onclick="resetAllocData()">초기화</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+    <table class="editable-table" id="allocTableWrap" tabindex="0">
+      <thead><tr><th>월</th><th class="text-right">인천 계획</th><th class="text-right">인천 실적</th><th class="text-right">인천 달성률</th><th class="text-right">포항 계획</th><th class="text-right">포항 실적</th><th class="text-right">포항 달성률</th></tr></thead>
+      <tbody id="allocTable"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 발주관리 ==================== -->
+<div class="tab-content" id="tab-order">
+  <div class="toolbar">
+    <div class="card-title" style="margin:0"><div class="icon"></div>발주 관리</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="showModal('orderModal')">+ 신규 발주</button>
+      <button class="btn btn-accent" onclick="generatePDF()">PDF 발주서 출력</button>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">금월 발주 건수</div><div class="kpi-value">47<small>건</small></div></div>
+    <div class="kpi-card accent"><div class="kpi-label">금월 발주 물량</div><div class="kpi-value">198,500<small>톤</small></div></div>
+    <div class="kpi-card success"><div class="kpi-label">완료 건수</div><div class="kpi-value">31<small>건</small></div></div>
+    <div class="kpi-card warning"><div class="kpi-label">진행 중</div><div class="kpi-value">12<small>건</small></div></div>
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>발주번호</th><th>거래처</th><th>등급</th><th class="text-right">수량(톤)</th><th class="text-right">매입단가(원/톤)</th><th class="text-right">금액(백만원)</th><th>납품공장</th><th>납품일</th><th>상태</th></tr></thead>
+      <tbody id="orderTable"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 거래처관리 ==================== -->
+<div class="tab-content" id="tab-supplier">
+  <div class="toolbar">
+    <div class="card-title" style="margin:0"><div class="icon"></div>거래처 관리</div>
+    <button class="btn btn-primary" onclick="showModal('supplierModal')">+ 거래처 등록</button>
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>코드</th><th>거래처명</th><th>지역</th><th>대표자</th><th>연락처</th><th class="text-right">월 공급능력(톤)</th><th class="text-right">금년 납품량(톤)</th><th>신뢰등급</th><th>납품실적</th></tr></thead>
+      <tbody id="supplierTable"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>거래처별 납품 비중</div>
+      <div class="chart-container"><canvas id="supplierPieChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>월별 주요 거래처 납품 추이</div>
+      <div class="chart-container"><canvas id="supplierTrendChart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 수입계약 ==================== -->
+<div class="tab-content" id="tab-import">
+  <div class="toolbar">
+    <div class="card-title" style="margin:0"><div class="icon"></div>수입 스크랩 계약 관리</div>
+    <button class="btn btn-primary" onclick="showModal('importModal')">+ 신규 계약</button>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">진행 중 계약</div><div class="kpi-value">8<small>건</small></div></div>
+    <div class="kpi-card accent"><div class="kpi-label">수입 물량 (금년)</div><div class="kpi-value">127,400<small>톤</small></div></div>
+    <div class="kpi-card success"><div class="kpi-label">평균 CFR 가격</div><div class="kpi-value">$372<small>/톤</small></div></div>
+    <div class="kpi-card warning"><div class="kpi-label">적용 환율</div><div class="kpi-value">1,385<small>원</small></div></div>
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>계약번호</th><th>수출국</th><th>공급사</th><th>등급</th><th class="text-right">수량(톤)</th><th class="text-right">CFR($/톤)</th><th class="text-right">환율</th><th>선적일</th><th>도착예정일</th><th>상태</th></tr></thead>
+      <tbody id="importTable"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="icon"></div>수입 계약 진행 현황</div>
+    <div class="chart-container"><canvas id="importChart"></canvas></div>
+  </div>
+</div>
+
+<!-- ==================== 재고현황 ==================== -->
+<div class="tab-content" id="tab-inventory">
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">전체 재고량</div><div class="kpi-value">76,200<small>톤</small></div><div class="kpi-sub">적정 재고 수준</div></div>
+    <div class="kpi-card accent"><div class="kpi-label">인천 야적장</div><div class="kpi-value">45,800<small>톤</small></div><div class="kpi-sub"><span class="status-indicator"><span class="status-dot green"></span>적정</span></div></div>
+    <div class="kpi-card success"><div class="kpi-label">포항 야적장</div><div class="kpi-value">30,400<small>톤</small></div><div class="kpi-sub"><span class="status-indicator"><span class="status-dot orange"></span>주의</span></div></div>
+    <div class="kpi-card warning"><div class="kpi-label">평균 회전일수</div><div class="kpi-value">9.8<small>일</small></div><div class="kpi-sub">목표: 10일 이내</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>인천공장 등급별 재고</div>
+      <div class="chart-container"><canvas id="invIncheonChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>포항공장 등급별 재고</div>
+      <div class="chart-container"><canvas id="invPohangChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="icon"></div>공장별 등급별 재고 상세</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>공장</th><th>등급</th><th class="text-right">현재 재고(톤)</th><th class="text-right">적정 재고(톤)</th><th class="text-right">재고율(%)</th><th>상태</th><th>재고 수준</th></tr></thead>
+      <tbody id="inventoryTable"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 구매실적 ==================== -->
+<div class="tab-content" id="tab-stats">
+  <div class="toolbar">
+    <div class="card-title" style="margin:0"><div class="icon"></div>2026년 구매 실적 통계</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-success" onclick="exportCSV()">엑셀 내보내기</button>
+      <button class="btn btn-outline" onclick="window.print()">인쇄</button>
+    </div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">1~3월 총 구매량</div><div class="kpi-value">636,200<small>톤</small></div><div class="kpi-sub">전년 동기 대비 <span class="up">+4.1%</span></div></div>
+    <div class="kpi-card accent"><div class="kpi-label">1~3월 총 구매금액</div><div class="kpi-value">2,481<small>억원</small></div><div class="kpi-sub">전년 동기 대비 <span class="up">+5.3%</span></div></div>
+    <div class="kpi-card success"><div class="kpi-label">평균 매입단가</div><div class="kpi-value">390,100<small>원/톤</small></div><div class="kpi-sub">전월 대비 <span class="down">-1.2%</span></div></div>
+    <div class="kpi-card warning"><div class="kpi-label">거래처 수</div><div class="kpi-value">24<small>개사</small></div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>월별 구매량 추이</div>
+      <div class="chart-container"><canvas id="statsMonthlyChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="icon"></div>등급별 구매 비중</div>
+      <div class="chart-container"><canvas id="statsGradeChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title"><div class="icon"></div>월별 구매 실적 상세</div>
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>월</th><th class="text-right">생철(톤)</th><th class="text-right">중량(톤)</th><th class="text-right">경량(톤)</th><th class="text-right">길로틴(톤)</th><th class="text-right">선반(톤)</th><th class="text-right">압축(톤)</th><th class="text-right">합계(톤)</th><th class="text-right">금액(억원)</th></tr></thead>
+      <tbody id="statsTable"></tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ==================== Modals ==================== -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('orderModal')">&times;</button>
+    <div class="modal-title">신규 발주 등록</div>
+    <div class="form-row">
+      <div class="form-group"><label>거래처</label><select><option>현대스크랩</option><option>포스코리사이클링</option><option>삼영금속</option><option>대한자원</option><option>한국메탈</option><option>동부스크랩</option></select></div>
+      <div class="form-group"><label>등급</label><select><option>생철</option><option>중량</option><option>경량</option><option>길로틴</option><option>선반</option><option>압축</option></select></div>
+      <div class="form-group"><label>수량(톤)</label><input type="number" placeholder="5,000" value="5000"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>매입단가(원/톤)</label><input type="number" placeholder="395,000" value="395000"></div>
+      <div class="form-group"><label>납품공장</label><select><option>인천공장</option><option>포항공장</option></select></div>
+      <div class="form-group"><label>납품일</label><input type="date" value="2026-03-15"></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="addOrder();hideModal('orderModal')">발주 등록</button>
+      <button class="btn btn-outline" onclick="hideModal('orderModal')">취소</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="supplierModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('supplierModal')">&times;</button>
+    <div class="modal-title">거래처 등록</div>
+    <div class="form-row">
+      <div class="form-group"><label>거래처명</label><input type="text" placeholder="거래처명 입력"></div>
+      <div class="form-group"><label>대표자</label><input type="text" placeholder="대표자명"></div>
+      <div class="form-group"><label>지역</label><select><option>인천</option><option>경기</option><option>충남</option><option>경북</option><option>부산</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>연락처</label><input type="tel" placeholder="032-XXX-XXXX"></div>
+      <div class="form-group"><label>월 공급능력(톤)</label><input type="number" placeholder="15,000"></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="hideModal('supplierModal')">등록</button>
+      <button class="btn btn-outline" onclick="hideModal('supplierModal')">취소</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('importModal')">&times;</button>
+    <div class="modal-title">수입 계약 등록</div>
+    <div class="form-row">
+      <div class="form-group"><label>수출국</label><select><option>일본</option><option>러시아</option></select></div>
+      <div class="form-group"><label>공급사</label><input type="text" placeholder="Toyota Tsusho"></div>
+      <div class="form-group"><label>등급</label><select><option>HMS1</option><option>HMS2</option><option>중량A</option><option>Shredded</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>수량(톤)</label><input type="number" placeholder="15,000" value="15000"></div>
+      <div class="form-group"><label>CFR 가격($/톤)</label><input type="number" placeholder="370" value="370"></div>
+      <div class="form-group"><label>적용 환율(원)</label><input type="number" placeholder="1,385" value="1385"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>선적일</label><input type="date" value="2026-03-20"></div>
+      <div class="form-group"><label>도착 예정일</label><input type="date" value="2026-04-05"></div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="hideModal('importModal')">계약 등록</button>
+      <button class="btn btn-outline" onclick="hideModal('importModal')">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- PDF Preview Modal -->
+<div class="modal-overlay" id="pdfModal">
+  <div class="modal" style="max-width:800px">
+    <button class="modal-close" onclick="hideModal('pdfModal')">&times;</button>
+    <div id="pdfContent" style="padding:20px;font-family:'Malgun Gothic',sans-serif">
+      <div style="text-align:center;border-bottom:3px double #1a237e;padding-bottom:16px;margin-bottom:20px">
+        <h2 style="color:#1a237e;margin-bottom:4px">동국제강 주식회사</h2>
+        <h3 style="color:#333">발 주 서</h3>
+      </div>
+      <table style="width:100%;margin-bottom:16px;font-size:13px">
+        <tr><td style="width:80px;font-weight:600">발주번호:</td><td>PO-2026-0348</td><td style="width:80px;font-weight:600">발주일:</td><td>2026-03-05</td></tr>
+        <tr><td style="font-weight:600">거래처:</td><td>현대스크랩</td><td style="font-weight:600">담당자:</td><td>김철호 과장</td></tr>
+      </table>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px">
+        <thead><tr style="background:#1a237e;color:white"><th style="padding:8px;text-align:left">등급</th><th style="padding:8px;text-align:right">수량(톤)</th><th style="padding:8px;text-align:right">단가(원/톤)</th><th style="padding:8px;text-align:right">금액(원)</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:8px;border-bottom:1px solid #ddd">중량</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">5,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">395,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">1,975,000,000</td></tr>
+          <tr style="background:#f5f5f5"><td style="padding:8px;border-bottom:1px solid #ddd">생철</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">3,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">410,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">1,230,000,000</td></tr>
+        </tbody>
+        <tfoot><tr style="font-weight:700;background:#e8eaf6"><td style="padding:8px" colspan="3">합계</td><td style="padding:8px;text-align:right">3,205,000,000</td></tr></tfoot>
+      </table>
+      <table style="width:100%;font-size:13px;margin-bottom:20px">
+        <tr><td style="width:80px;font-weight:600">납품공장:</td><td>인천공장</td></tr>
+        <tr><td style="font-weight:600">납품일:</td><td>2026-03-15</td></tr>
+        <tr><td style="font-weight:600">비고:</td><td>품질 기준 충족 필수, 불량 시 반품 처리</td></tr>
+      </table>
+      <div style="text-align:center;margin-top:40px;font-size:13px">
+        <p>위와 같이 발주합니다.</p>
+        <p style="margin-top:30px">2026년 3월 5일</p>
+        <p style="margin-top:20px;font-weight:700">동국제강 주식회사 원료기획팀</p>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-primary" onclick="window.print()">인쇄 / PDF 저장</button>
+      <button class="btn btn-outline" onclick="hideModal('pdfModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Scripts (load order matters) ===== -->
+<script src="js/utils.js"></script>
+<script src="js/data.js"></script>
+<script src="js/plan.js"></script>
+<script src="js/alloc.js"></script>
+<script src="js/order.js"></script>
+<script src="js/supplier.js"></script>
+<script src="js/import.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
