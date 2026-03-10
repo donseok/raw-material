@@ -1,5 +1,13 @@
 // ===== Default Data Definitions =====
 
+const STORAGE_KEYS = Object.freeze({
+  plan: 'planData',
+  alloc: 'allocData',
+  orders: 'ordersData',
+  suppliers: 'suppliersData',
+  imports: 'importsData'
+});
+
 const defaultPlanData = [
   {plan:225000,dom:180000,imp:45000,actual:218400},
   {plan:220000,dom:176000,imp:44000,actual:205700},
@@ -22,11 +30,11 @@ const defaultAllocData = [
 ];
 
 // ===== Active Data (mutable) =====
-let planData = JSON.parse(JSON.stringify(defaultPlanData));
-let allocData = JSON.parse(JSON.stringify(defaultAllocData));
+let planData = cloneData(defaultPlanData);
+let allocData = cloneData(defaultAllocData);
 
 // ===== Orders =====
-const orders = [
+const defaultOrders = [
   {no:'PO-2026-0341',sup:'현대스크랩',grade:'중량',qty:5000,price:395000,plant:'인천',date:'2026-03-08',status:'완료'},
   {no:'PO-2026-0342',sup:'삼영금속',grade:'생철',qty:3500,price:410000,plant:'인천',date:'2026-03-10',status:'완료'},
   {no:'PO-2026-0343',sup:'대한자원',grade:'경량',qty:4200,price:365000,plant:'포항',date:'2026-03-11',status:'완료'},
@@ -38,9 +46,10 @@ const orders = [
   {no:'PO-2026-0349',sup:'영남자원',grade:'경량',qty:3800,price:362000,plant:'포항',date:'2026-03-22',status:'대기'},
   {no:'PO-2026-0350',sup:'대한자원',grade:'길로틴',qty:5500,price:388000,plant:'인천',date:'2026-03-25',status:'대기'},
 ];
+let orders = cloneData(defaultOrders);
 
 // ===== Suppliers =====
-const suppliers = [
+const defaultSuppliers = [
   {code:'S001',name:'현대스크랩',region:'인천',rep:'박정수',tel:'032-812-5500',cap:25000,ytd:58200,grade:'A',rate:97},
   {code:'S002',name:'포스코리사이클링',region:'포항',rep:'이동환',tel:'054-220-3300',cap:20000,ytd:45600,grade:'A',rate:96},
   {code:'S003',name:'삼영금속',region:'경기 안산',rep:'김영호',tel:'031-492-7700',cap:18000,ytd:41300,grade:'A',rate:94},
@@ -50,9 +59,10 @@ const suppliers = [
   {code:'S007',name:'영남자원',region:'경북 경주',rep:'한승규',tel:'054-741-8800',cap:8000,ytd:18400,grade:'B',rate:85},
   {code:'S008',name:'서해금속',region:'인천',rep:'윤석진',tel:'032-765-1100',cap:7000,ytd:15200,grade:'B',rate:84},
 ];
+let suppliers = cloneData(defaultSuppliers);
 
 // ===== Import Contracts =====
-const imports = [
+const defaultImports = [
   {no:'IMP-2026-001',country:'일본',sup:'Toyota Tsusho',grade:'HMS1',qty:15000,cfr:368,fx:1382,ship:'2026-01-15',eta:'2026-02-02',status:'도착'},
   {no:'IMP-2026-002',country:'일본',sup:'Hanwa Co.',grade:'Shredded',qty:12000,cfr:375,fx:1385,ship:'2026-01-28',eta:'2026-02-15',status:'도착'},
   {no:'IMP-2026-003',country:'러시아',sup:'NLMK Trading',grade:'HMS2',qty:20000,cfr:358,fx:1380,ship:'2026-02-05',eta:'2026-03-01',status:'도착'},
@@ -62,6 +72,7 @@ const imports = [
   {no:'IMP-2026-007',country:'러시아',sup:'Severstal Export',grade:'HMS1',qty:16000,cfr:362,fx:1385,ship:'2026-03-20',eta:'2026-04-12',status:'계약'},
   {no:'IMP-2026-008',country:'일본',sup:'Hanwa Co.',grade:'HMS1',qty:10400,cfr:378,fx:1387,ship:'2026-04-01',eta:'2026-04-18',status:'계약'},
 ];
+let imports = cloneData(defaultImports);
 
 // ===== Inventory =====
 const inventory = [

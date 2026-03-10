@@ -1,6 +1,5 @@
 // ===== Main Application Initialization =====
 
-// Tab Navigation
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -11,10 +10,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   });
 });
 
-// Date Display
-document.getElementById('currentDate').textContent = new Date().toLocaleDateString('ko-KR', {year:'numeric',month:'long',day:'numeric',weekday:'long'});
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('ko-KR', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long'
+});
 
-// Chart Router
 function renderCharts(tab) {
   setTimeout(() => {
     if (tab === 'plan') renderPlanChart();
@@ -26,7 +28,6 @@ function renderCharts(tab) {
   }, 50);
 }
 
-// Paste Handlers
 document.addEventListener('DOMContentLoaded', function() {
   const planTableWrap = document.getElementById('planTableWrap');
   const allocTableWrap = document.getElementById('allocTableWrap');
@@ -36,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
     t.addEventListener('blur', () => t.classList.remove('paste-ready'));
   });
 
-  // Plan table paste
   planTableWrap.addEventListener('paste', function(e) {
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData('text');
@@ -45,25 +45,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let startIdx = 0;
     const firstCols = lines[0].split('\t');
-    if (firstCols.length >= 2 && isNaN(parseInt(firstCols[1].replace(/,/g,'')))) startIdx = 1;
+    if (firstCols.length >= 2 && Number.isNaN(Number.parseInt(firstCols[1].replace(/,/g, ''), 10))) startIdx = 1;
 
-    const newData = [];
-    for (let i = startIdx; i < lines.length; i++) {
-      const cols = lines[i].split('\t');
-      if (cols.length < 4) { showToast((i+1) + '번째 줄: 최소 4개 컬럼 필요', 'error'); return; }
-      const plan = parseNum(cols[1]), dom = parseNum(cols[2]), imp = parseNum(cols[3]);
-      const actual = cols.length >= 5 ? parseNum(cols[4]) : null;
-      if (plan === null || dom === null || imp === null) { showToast((i+1) + '번째 줄: 숫자 오류', 'error'); return; }
-      newData.push({ plan, dom, imp, actual });
+    const rowCount = lines.length - startIdx;
+    if (rowCount <= 0 || rowCount > months.length) {
+      showToast('수급계획은 최대 12개월까지만 붙여넣을 수 있습니다.', 'error');
+      return;
     }
 
-    while (newData.length < 12) newData.push({ plan: 0, dom: 0, imp: 0, actual: null });
-    planData = newData;
-    savePlanData(); renderPlanUI(); renderPlanChart();
-    showToast(newData.length + '개월 데이터가 반영되었습니다.', 'success');
+    const newRows = [];
+    for (let i = startIdx; i < lines.length; i++) {
+      const cols = lines[i].split('\t');
+      if (cols.length < 4) {
+        showToast((i + 1) + '번째 줄: 최소 4개 컬럼이 필요합니다.', 'error');
+        return;
+      }
+
+      newRows.push({
+        plan: cols[1],
+        dom: cols[2],
+        imp: cols[3],
+        actual: cols.length >= 5 ? cols[4] : null
+      });
+    }
+
+    const normalized = normalizePlanData(newRows, { padToYear: true });
+    if (!normalized) {
+      showToast('수급계획 데이터 형식이 올바르지 않습니다.', 'error');
+      return;
+    }
+
+    planData = normalized;
+    savePlanData();
+    renderPlanUI();
+    renderPlanChart();
+    showToast(rowCount + '개월 데이터가 반영되었습니다.', 'success');
   });
 
-  // Alloc table paste
   allocTableWrap.addEventListener('paste', function(e) {
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData('text');
@@ -72,25 +90,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let startIdx = 0;
     const firstCols = lines[0].split('\t');
-    if (firstCols.length >= 2 && isNaN(parseInt(firstCols[1].replace(/,/g,'')))) startIdx = 1;
+    if (firstCols.length >= 2 && Number.isNaN(Number.parseInt(firstCols[1].replace(/,/g, ''), 10))) startIdx = 1;
 
-    const newData = [];
-    for (let i = startIdx; i < lines.length; i++) {
-      const cols = lines[i].split('\t');
-      if (cols.length < 5) { showToast((i+1) + '번째 줄: 5개 컬럼 필요', 'error'); return; }
-      const ic = parseNum(cols[1]), ia = parseNum(cols[2]), pc = parseNum(cols[3]), pa = parseNum(cols[4]);
-      if (ic === null || ia === null || pc === null || pa === null) { showToast((i+1) + '번째 줄: 숫자 오류', 'error'); return; }
-      newData.push({ ic, ia, pc, pa });
+    const rowCount = lines.length - startIdx;
+    if (rowCount <= 0 || rowCount > months.length) {
+      showToast('공장배분은 최대 12개월까지만 붙여넣을 수 있습니다.', 'error');
+      return;
     }
 
-    allocData = newData;
-    saveAllocData(); renderAllocUI(); renderAllocCharts();
-    showToast(newData.length + '개월 데이터가 반영되었습니다.', 'success');
+    const newRows = [];
+    for (let i = startIdx; i < lines.length; i++) {
+      const cols = lines[i].split('\t');
+      if (cols.length < 5) {
+        showToast((i + 1) + '번째 줄: 5개 컬럼이 필요합니다.', 'error');
+        return;
+      }
+
+      newRows.push({
+        ic: cols[1],
+        ia: cols[2],
+        pc: cols[3],
+        pa: cols[4]
+      });
+    }
+
+    const normalized = normalizeAllocData(newRows);
+    if (!normalized) {
+      showToast('공장배분 데이터 형식이 올바르지 않습니다.', 'error');
+      return;
+    }
+
+    allocData = normalized;
+    saveAllocData();
+    renderAllocUI();
+    renderAllocCharts();
+    showToast(rowCount + '개월 데이터가 반영되었습니다.', 'success');
   });
 });
 
-// ===== Initialize All Modules =====
-loadFromStorage();
+loadPlanFromStorage();
+loadAllocFromStorage();
+loadOrderDataFromStorage();
+loadSupplierDataFromStorage();
+loadImportDataFromStorage();
+
 initOrders();
 initSuppliers();
 initImports();

@@ -146,10 +146,10 @@
   </div>
 
   <div class="kpi-row">
-    <div class="kpi-card"><div class="kpi-label">금월 발주 건수</div><div class="kpi-value">47<small>건</small></div></div>
-    <div class="kpi-card accent"><div class="kpi-label">금월 발주 물량</div><div class="kpi-value">198,500<small>톤</small></div></div>
-    <div class="kpi-card success"><div class="kpi-label">완료 건수</div><div class="kpi-value">31<small>건</small></div></div>
-    <div class="kpi-card warning"><div class="kpi-label">진행 중</div><div class="kpi-value">12<small>건</small></div></div>
+    <div class="kpi-card" id="orderKpi1"><div class="kpi-label">금월 발주 건수</div><div class="kpi-value">47<small>건</small></div></div>
+    <div class="kpi-card accent" id="orderKpi2"><div class="kpi-label">금월 발주 물량</div><div class="kpi-value">198,500<small>톤</small></div></div>
+    <div class="kpi-card success" id="orderKpi3"><div class="kpi-label">완료 건수</div><div class="kpi-value">31<small>건</small></div></div>
+    <div class="kpi-card warning" id="orderKpi4"><div class="kpi-label">진행 중</div><div class="kpi-value">12<small>건</small></div></div>
   </div>
 
   <div class="card">
@@ -198,10 +198,10 @@
   </div>
 
   <div class="kpi-row">
-    <div class="kpi-card"><div class="kpi-label">진행 중 계약</div><div class="kpi-value">8<small>건</small></div></div>
-    <div class="kpi-card accent"><div class="kpi-label">수입 물량 (금년)</div><div class="kpi-value">127,400<small>톤</small></div></div>
-    <div class="kpi-card success"><div class="kpi-label">평균 CFR 가격</div><div class="kpi-value">$372<small>/톤</small></div></div>
-    <div class="kpi-card warning"><div class="kpi-label">적용 환율</div><div class="kpi-value">1,385<small>원</small></div></div>
+    <div class="kpi-card" id="importKpi1"><div class="kpi-label">진행 중 계약</div><div class="kpi-value">8<small>건</small></div></div>
+    <div class="kpi-card accent" id="importKpi2"><div class="kpi-label">수입 물량 (금년)</div><div class="kpi-value">127,400<small>톤</small></div></div>
+    <div class="kpi-card success" id="importKpi3"><div class="kpi-label">평균 CFR 가격</div><div class="kpi-value">$372<small>/톤</small></div></div>
+    <div class="kpi-card warning" id="importKpi4"><div class="kpi-label">적용 환율</div><div class="kpi-value">1,385<small>원</small></div></div>
   </div>
 
   <div class="card">
@@ -297,17 +297,17 @@
     <button class="modal-close" onclick="hideModal('orderModal')">&times;</button>
     <div class="modal-title">신규 발주 등록</div>
     <div class="form-row">
-      <div class="form-group"><label>거래처</label><select><option>현대스크랩</option><option>포스코리사이클링</option><option>삼영금속</option><option>대한자원</option><option>한국메탈</option><option>동부스크랩</option></select></div>
-      <div class="form-group"><label>등급</label><select><option>생철</option><option>중량</option><option>경량</option><option>길로틴</option><option>선반</option><option>압축</option></select></div>
-      <div class="form-group"><label>수량(톤)</label><input type="number" placeholder="5,000" value="5000"></div>
+      <div class="form-group"><label>거래처</label><select id="orderSupplier"><option>현대스크랩</option><option>포스코리사이클링</option><option>삼영금속</option><option>대한자원</option><option>한국메탈</option><option>동부스크랩</option></select></div>
+      <div class="form-group"><label>등급</label><select id="orderGrade"><option>생철</option><option>중량</option><option>경량</option><option>길로틴</option><option>선반</option><option>압축</option></select></div>
+      <div class="form-group"><label>수량(톤)</label><input id="orderQty" type="number" placeholder="5,000" value="5000" min="0"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>매입단가(원/톤)</label><input type="number" placeholder="395,000" value="395000"></div>
-      <div class="form-group"><label>납품공장</label><select><option>인천공장</option><option>포항공장</option></select></div>
-      <div class="form-group"><label>납품일</label><input type="date" value="2026-03-15"></div>
+      <div class="form-group"><label>매입단가(원/톤)</label><input id="orderPrice" type="number" placeholder="395,000" value="395000" min="0"></div>
+      <div class="form-group"><label>납품공장</label><select id="orderPlant"><option value="인천">인천공장</option><option value="포항">포항공장</option></select></div>
+      <div class="form-group"><label>납품일</label><input id="orderDate" type="date" value="2026-03-15"></div>
     </div>
     <div style="margin-top:16px;display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="addOrder();hideModal('orderModal')">발주 등록</button>
+      <button class="btn btn-primary" onclick="submitOrder()">발주 등록</button>
       <button class="btn btn-outline" onclick="hideModal('orderModal')">취소</button>
     </div>
   </div>
@@ -318,16 +318,16 @@
     <button class="modal-close" onclick="hideModal('supplierModal')">&times;</button>
     <div class="modal-title">거래처 등록</div>
     <div class="form-row">
-      <div class="form-group"><label>거래처명</label><input type="text" placeholder="거래처명 입력"></div>
-      <div class="form-group"><label>대표자</label><input type="text" placeholder="대표자명"></div>
-      <div class="form-group"><label>지역</label><select><option>인천</option><option>경기</option><option>충남</option><option>경북</option><option>부산</option></select></div>
+      <div class="form-group"><label>거래처명</label><input id="supplierName" type="text" placeholder="거래처명 입력"></div>
+      <div class="form-group"><label>대표자</label><input id="supplierRep" type="text" placeholder="대표자명"></div>
+      <div class="form-group"><label>지역</label><select id="supplierRegion"><option>인천</option><option>경기</option><option>충남</option><option>경북</option><option>부산</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>연락처</label><input type="tel" placeholder="032-XXX-XXXX"></div>
-      <div class="form-group"><label>월 공급능력(톤)</label><input type="number" placeholder="15,000"></div>
+      <div class="form-group"><label>연락처</label><input id="supplierTel" type="tel" placeholder="032-XXX-XXXX"></div>
+      <div class="form-group"><label>월 공급능력(톤)</label><input id="supplierCap" type="number" placeholder="15,000" min="0"></div>
     </div>
     <div style="margin-top:16px;display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="hideModal('supplierModal')">등록</button>
+      <button class="btn btn-primary" onclick="submitSupplier()">등록</button>
       <button class="btn btn-outline" onclick="hideModal('supplierModal')">취소</button>
     </div>
   </div>
@@ -338,21 +338,21 @@
     <button class="modal-close" onclick="hideModal('importModal')">&times;</button>
     <div class="modal-title">수입 계약 등록</div>
     <div class="form-row">
-      <div class="form-group"><label>수출국</label><select><option>일본</option><option>러시아</option></select></div>
-      <div class="form-group"><label>공급사</label><input type="text" placeholder="Toyota Tsusho"></div>
-      <div class="form-group"><label>등급</label><select><option>HMS1</option><option>HMS2</option><option>중량A</option><option>Shredded</option></select></div>
+      <div class="form-group"><label>수출국</label><select id="importCountry"><option>일본</option><option>러시아</option></select></div>
+      <div class="form-group"><label>공급사</label><input id="importSupplier" type="text" placeholder="Toyota Tsusho"></div>
+      <div class="form-group"><label>등급</label><select id="importGrade"><option>HMS1</option><option>HMS2</option><option>중량A</option><option>Shredded</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>수량(톤)</label><input type="number" placeholder="15,000" value="15000"></div>
-      <div class="form-group"><label>CFR 가격($/톤)</label><input type="number" placeholder="370" value="370"></div>
-      <div class="form-group"><label>적용 환율(원)</label><input type="number" placeholder="1,385" value="1385"></div>
+      <div class="form-group"><label>수량(톤)</label><input id="importQty" type="number" placeholder="15,000" value="15000" min="0"></div>
+      <div class="form-group"><label>CFR 가격($/톤)</label><input id="importCfr" type="number" placeholder="370" value="370" min="0"></div>
+      <div class="form-group"><label>적용 환율(원)</label><input id="importFx" type="number" placeholder="1,385" value="1385" min="0"></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>선적일</label><input type="date" value="2026-03-20"></div>
-      <div class="form-group"><label>도착 예정일</label><input type="date" value="2026-04-05"></div>
+      <div class="form-group"><label>선적일</label><input id="importShipDate" type="date" value="2026-03-20"></div>
+      <div class="form-group"><label>도착 예정일</label><input id="importEtaDate" type="date" value="2026-04-05"></div>
     </div>
     <div style="margin-top:16px;display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="hideModal('importModal')">계약 등록</button>
+      <button class="btn btn-primary" onclick="submitImport()">계약 등록</button>
       <button class="btn btn-outline" onclick="hideModal('importModal')">취소</button>
     </div>
   </div>
@@ -368,25 +368,24 @@
         <h3 style="color:#333">발 주 서</h3>
       </div>
       <table style="width:100%;margin-bottom:16px;font-size:13px">
-        <tr><td style="width:80px;font-weight:600">발주번호:</td><td>PO-2026-0348</td><td style="width:80px;font-weight:600">발주일:</td><td>2026-03-05</td></tr>
-        <tr><td style="font-weight:600">거래처:</td><td>현대스크랩</td><td style="font-weight:600">담당자:</td><td>김철호 과장</td></tr>
+        <tr><td style="width:80px;font-weight:600">발주번호:</td><td id="pdfOrderNo">PO-2026-0348</td><td style="width:80px;font-weight:600">발주일:</td><td id="pdfOrderDate">2026-03-05</td></tr>
+        <tr><td style="font-weight:600">거래처:</td><td id="pdfSupplier">현대스크랩</td><td style="font-weight:600">담당자:</td><td id="pdfManager">김철호 과장</td></tr>
       </table>
       <table style="width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px">
         <thead><tr style="background:#1a237e;color:white"><th style="padding:8px;text-align:left">등급</th><th style="padding:8px;text-align:right">수량(톤)</th><th style="padding:8px;text-align:right">단가(원/톤)</th><th style="padding:8px;text-align:right">금액(원)</th></tr></thead>
         <tbody>
-          <tr><td style="padding:8px;border-bottom:1px solid #ddd">중량</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">5,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">395,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">1,975,000,000</td></tr>
-          <tr style="background:#f5f5f5"><td style="padding:8px;border-bottom:1px solid #ddd">생철</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">3,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">410,000</td><td style="padding:8px;text-align:right;border-bottom:1px solid #ddd">1,230,000,000</td></tr>
+          <tr><td id="pdfGrade" style="padding:8px;border-bottom:1px solid #ddd">중량</td><td id="pdfQty" style="padding:8px;text-align:right;border-bottom:1px solid #ddd">5,000</td><td id="pdfPrice" style="padding:8px;text-align:right;border-bottom:1px solid #ddd">395,000</td><td id="pdfAmount" style="padding:8px;text-align:right;border-bottom:1px solid #ddd">1,975,000,000</td></tr>
         </tbody>
-        <tfoot><tr style="font-weight:700;background:#e8eaf6"><td style="padding:8px" colspan="3">합계</td><td style="padding:8px;text-align:right">3,205,000,000</td></tr></tfoot>
+        <tfoot><tr style="font-weight:700;background:#e8eaf6"><td style="padding:8px" colspan="3">합계</td><td id="pdfTotalAmount" style="padding:8px;text-align:right">1,975,000,000</td></tr></tfoot>
       </table>
       <table style="width:100%;font-size:13px;margin-bottom:20px">
-        <tr><td style="width:80px;font-weight:600">납품공장:</td><td>인천공장</td></tr>
-        <tr><td style="font-weight:600">납품일:</td><td>2026-03-15</td></tr>
+        <tr><td style="width:80px;font-weight:600">납품공장:</td><td id="pdfPlant">인천공장</td></tr>
+        <tr><td style="font-weight:600">납품일:</td><td id="pdfDeliveryDate">2026-03-15</td></tr>
         <tr><td style="font-weight:600">비고:</td><td>품질 기준 충족 필수, 불량 시 반품 처리</td></tr>
       </table>
       <div style="text-align:center;margin-top:40px;font-size:13px">
         <p>위와 같이 발주합니다.</p>
-        <p style="margin-top:30px">2026년 3월 5일</p>
+        <p id="pdfIssueDate" style="margin-top:30px">2026년 3월 5일</p>
         <p style="margin-top:20px;font-weight:700">동국제강 주식회사 원료기획팀</p>
       </div>
     </div>
