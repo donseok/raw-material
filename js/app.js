@@ -1,5 +1,20 @@
 // ===== Main Application Initialization =====
 
+// Login user display
+(function() {
+  try {
+    const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    if (user && user.name) {
+      document.getElementById('userDisplay').textContent = '원료기획팀 | ' + user.name;
+    }
+  } catch(e) {}
+})();
+
+function logout() {
+  sessionStorage.removeItem('loggedInUser');
+  location.href = 'login.html';
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));

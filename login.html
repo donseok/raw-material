@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>로그인 - 동국제강 철스크랩 관리 시스템</title>
+<link rel="stylesheet" href="css/variables.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Segoe UI', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--primary-light) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background decoration */
+body::before {
+  content: '';
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,143,0,0.08) 0%, transparent 70%);
+  top: -200px;
+  right: -100px;
+  border-radius: 50%;
+}
+body::after {
+  content: '';
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,143,0,0.06) 0%, transparent 70%);
+  bottom: -150px;
+  left: -100px;
+  border-radius: 50%;
+}
+
+.login-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: 0 20px;
+}
+
+.login-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 48px 40px 40px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.login-logo {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.login-logo span {
+  color: var(--accent);
+}
+
+.login-subtitle {
+  font-size: 13px;
+  color: var(--text-light);
+  letter-spacing: 0.5px;
+}
+
+.login-divider {
+  width: 40px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 2px;
+  margin: 16px auto 0;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.input-wrapper .icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--gray-400);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 12px 14px 12px 42px;
+  border: 2px solid var(--gray-200);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--gray-50);
+  transition: all 0.2s;
+  outline: none;
+}
+
+.form-field input:focus {
+  border-color: var(--primary);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(26,35,126,0.08);
+}
+
+.form-field input:focus + .icon,
+.form-field input:focus ~ .icon {
+  color: var(--primary);
+}
+
+.form-field input::placeholder {
+  color: var(--gray-400);
+}
+
+.error-msg {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: #ffebee;
+  border: 1px solid #ffcdd2;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--danger);
+}
+.error-msg.show { display: flex; }
+.error-msg .icon { font-size: 16px; }
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-btn:hover {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  box-shadow: 0 4px 16px rgba(26,35,126,0.4);
+  transform: translateY(-1px);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(26,35,126,0.3);
+}
+
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 28px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+}
+
+.login-footer strong {
+  color: rgba(255,255,255,0.7);
+}
+
+/* Shake animation for error */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+@media (max-width: 480px) {
+  .login-card { padding: 36px 24px 32px; }
+  .login-logo { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+
+<div class="login-container">
+  <div class="login-card" id="loginCard">
+    <div class="login-header">
+      <div class="login-logo">동국제강 <span>DK</span></div>
+      <div class="login-subtitle">철스크랩 수급 계획 및 구매 관리 시스템</div>
+      <div class="login-divider"></div>
+    </div>
+
+    <form id="loginForm" onsubmit="return handleLogin(event)">
+      <div class="form-field">
+        <label>아이디</label>
+        <div class="input-wrapper">
+          <input type="text" id="userId" placeholder="아이디를 입력하세요" autocomplete="username" autofocus>
+          <span class="icon">&#128100;</span>
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label>비밀번호</label>
+        <div class="input-wrapper">
+          <input type="password" id="userPw" placeholder="비밀번호를 입력하세요" autocomplete="current-password">
+          <span class="icon">&#128274;</span>
+        </div>
+      </div>
+
+      <div class="error-msg" id="errorMsg">
+        <span class="icon">&#9888;</span>
+        <span id="errorText">아이디 또는 비밀번호가 일치하지 않습니다.</span>
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">로그인</button>
+    </form>
+  </div>
+
+  <div class="login-footer">
+    <strong>동국제강 주식회사</strong> 원료기획팀 &copy; 2026
+  </div>
+</div>
+
+<script>
+const USERS = {
+  dongkuk1: { password: '1234', name: '김철호 과장' },
+  dongkuk2: { password: '1234', name: '박영수 대리' }
+};
+
+function handleLogin(e) {
+  e.preventDefault();
+
+  const id = document.getElementById('userId').value.trim();
+  const pw = document.getElementById('userPw').value;
+  const errorMsg = document.getElementById('errorMsg');
+  const errorText = document.getElementById('errorText');
+  const card = document.getElementById('loginCard');
+
+  errorMsg.classList.remove('show');
+
+  if (!id || !pw) {
+    errorText.textContent = '아이디와 비밀번호를 모두 입력해주세요.';
+    errorMsg.classList.add('show');
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    return false;
+  }
+
+  const user = USERS[id];
+  if (!user || user.password !== pw) {
+    errorText.textContent = '아이디 또는 비밀번호가 일치하지 않습니다.';
+    errorMsg.classList.add('show');
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    document.getElementById('userPw').value = '';
+    document.getElementById('userPw').focus();
+    return false;
+  }
+
+  sessionStorage.setItem('loggedInUser', JSON.stringify({ id: id, name: user.name }));
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.textContent = '로그인 중...';
+
+  setTimeout(function() {
+    location.href = 'index.html';
+  }, 500);
+
+  return false;
+}
+
+// Already logged in? Redirect
+if (sessionStorage.getItem('loggedInUser')) {
+  location.href = 'index.html';
+}
+</script>
+</body>
+</html>

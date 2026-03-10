@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>철스크랩 수급 계획 및 구매 관리 시스템 - 동국제강</title>
+<script>
+if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="css/variables.css">
 <link rel="stylesheet" href="css/layout.css">
@@ -18,7 +21,8 @@
   </div>
   <div class="header-right">
     <div class="date" id="currentDate"></div>
-    <div class="user">원료기획팀 | 김철호 과장</div>
+    <div class="user" id="userDisplay">원료기획팀 | 김철호 과장</div>
+    <button onclick="logout()" style="background:rgba(255,255,255,0.15);border:none;color:white;padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;font-family:inherit;">로그아웃</button>
   </div>
 </div>
 
