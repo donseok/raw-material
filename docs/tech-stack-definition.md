@@ -26,6 +26,9 @@
 | 스타일링 | CSS3 | - | 레이아웃, 반응형, 애니메이션 |
 | 스크립팅 | JavaScript | ES6+ | 비즈니스 로직, DOM 조작, 이벤트 처리 |
 | 차트 | Chart.js | 4.4.1 | 데이터 시각화 (막대/도넛/파이/라인 차트) |
+| 화면 캡처 | html2canvas | 1.4.1 | DOM 요소를 이미지로 캡처 |
+| 문서 생성 | docx | 9.5.1 | Word(.docx) 문서 생성 |
+| 파일 저장 | FileSaver.js | 2.0.5 | Blob을 파일로 다운로드 |
 | 데이터 저장 | Web Storage API | - | localStorage (영구), sessionStorage (세션) |
 | 배포 | Vercel | - | 정적 사이트 호스팅, 자동 배포 |
 | 소스 관리 | Git / GitHub | - | 버전 관리, 협업 |
@@ -124,6 +127,9 @@ CSS를 3개 파일로 분리하여 관심사 분리 원칙을 적용합니다.
 | `Array.includes()` | `normalizeOrder()` 유효값 검증 |
 | `Number.isFinite()` | `fmt()`, `isNonNegativeNumber()` |
 | `String.padStart()` | 자동 번호 생성 (PO, IMP, S코드) |
+| `async`/`await` | `export-doc.js` (탭 순회, 캡처, 문서 생성) |
+| Optional chaining (`?.`) | `export-doc.js` (loggedInUser?.name) |
+| `Promise` | `export-doc.js` (canvas.toBlob, blob.arrayBuffer) |
 
 #### 모듈 구조 (글로벌 스코프)
 
@@ -143,6 +149,7 @@ supplier.js  ← 거래처관리 모듈
 import.js    ← 수입계약 모듈
 inventory.js ← 재고현황 모듈
 stats.js     ← 구매실적 모듈
+export-doc.js ← DOCX 내보내기 모듈
     ↓
 app.js       ← 초기화, 탭 제어, 이벤트 바인딩
 ```
@@ -206,6 +213,37 @@ function destroyChart(id) {
 ```
 
 탭 전환 시 `renderCharts(tab)`이 호출되며, 활성 탭의 차트만 렌더링합니다.
+
+---
+
+## 3-1. 문서 내보내기 라이브러리
+
+### 3-1.1 html2canvas
+
+| 항목 | 내용 |
+|------|------|
+| 라이브러리 | html2canvas |
+| 버전 | 1.4.1 |
+| 용도 | DOM 요소를 Canvas로 렌더링하여 PNG 이미지 생성 |
+| 사용 위치 | `export-doc.js`의 `captureElementSnapshot()` |
+
+### 3-1.2 docx
+
+| 항목 | 내용 |
+|------|------|
+| 라이브러리 | docx |
+| 버전 | 9.5.1 |
+| 번들 | IIFE (`index.iife.js`) |
+| 용도 | JavaScript에서 Word(.docx) 문서 생성 |
+| 사용 클래스 | `Document`, `Paragraph`, `TextRun`, `ImageRun`, `Packer`, `HeadingLevel`, `AlignmentType`, `PageOrientation` |
+
+### 3-1.3 FileSaver.js
+
+| 항목 | 내용 |
+|------|------|
+| 라이브러리 | FileSaver.js |
+| 버전 | 2.0.5 |
+| 용도 | Blob 객체를 사용자 파일로 다운로드 (`saveAs()`) |
 
 ---
 
@@ -391,6 +429,7 @@ raw-material/
 │   ├── import.js             # 수입계약 모듈
 │   ├── inventory.js          # 재고현황 모듈
 │   ├── stats.js              # 구매실적 모듈
+│   ├── export-doc.js         # DOCX 내보내기
 │   └── app.js                # 초기화, 탭 제어
 ├── docs/                     # 문서
 ├── CLAUDE.md                 # Claude Code 가이드
@@ -428,8 +467,11 @@ raw-material/
 | 리소스 | URL | 필요 시점 |
 |--------|-----|----------|
 | Chart.js 4.4.1 | `cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js` | 페이지 로드 |
+| html2canvas 1.4.1 | `cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js` | 페이지 로드 |
+| FileSaver.js 2.0.5 | `cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js` | 페이지 로드 |
+| docx 9.5.1 | `cdn.jsdelivr.net/npm/docx@9.5.1/dist/index.iife.js` | 페이지 로드 |
 
-> **오프라인 모드**: Chart.js CDN에 접근 불가 시 차트만 미표시되며, 나머지 기능은 정상 동작합니다.
+> **오프라인 모드**: CDN에 접근 불가 시 차트 미표시 및 DOC 저장 불가. 나머지 기능은 정상 동작합니다.
 
 ---
 
@@ -441,9 +483,12 @@ raw-material/
 |------|------------|
 | HTML (login + index) | ~40KB |
 | CSS (3 파일) | ~8KB |
-| JavaScript (10 파일) | ~25KB |
+| JavaScript (11 파일) | ~32KB |
 | Chart.js (CDN, gzip) | ~70KB |
-| **총 전송량** | **~143KB** |
+| html2canvas (CDN, gzip) | ~40KB |
+| docx (CDN, gzip) | ~180KB |
+| FileSaver.js (CDN, gzip) | ~3KB |
+| **총 전송량** | **~373KB** |
 
 ### 9.2 런타임 성능 고려사항
 

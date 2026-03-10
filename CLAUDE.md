@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-동국제강 철스크랩 수급 계획 및 구매 관리 시스템. 순수 HTML/CSS/JavaScript 정적 프로젝트 (빌드 도구/번들러 없음). Chart.js CDN 사용 (인터넷 필요). Vercel에 배포됨 — `main` 브랜치 push 시 자동 배포.
+동국제강 철스크랩 수급 계획 및 구매 관리 시스템. 순수 HTML/CSS/JavaScript 정적 프로젝트 (빌드 도구/번들러 없음). Chart.js, html2canvas, docx, FileSaver.js를 CDN으로 사용 (인터넷 필요). Vercel에 배포됨 — `main` 브랜치 push 시 자동 배포.
 
 ## Running
 
@@ -24,7 +24,7 @@ python3 -m http.server
 ### 스크립트 로드 순서 (중요)
 `index.html` 하단에서 순서대로 로드. 전역 스코프 공유 (ES Module 아님):
 
-`utils.js` → `data.js` → 탭 모듈들(plan/alloc/order/supplier/import/inventory/stats) → `app.js`
+`utils.js` → `data.js` → 탭 모듈들(plan/alloc/order/supplier/import/inventory/stats) → `export-doc.js` → `app.js`
 
 ### 각 탭 모듈의 공통 패턴
 모든 탭 모듈(`js/plan.js`, `js/order.js` 등)은 동일한 구조를 따름:
@@ -59,3 +59,4 @@ python3 -m http.server
 - 모달: `showModal(id)` / `hideModal(id)`, 폼 제출은 `submit*()` 함수
 - 차트: 탭 전환 시 `destroyChart(id)` 후 재생성, `chartInstances` 객체로 관리
 - `login.html`은 독립적 — CSS/JS 인라인 (외부 CSS는 `variables.css`만 참조)
+- DOC 저장: `js/export-doc.js`의 `exportDashboardDoc()` — 각 탭을 순회하며 html2canvas로 스냅샷 캡처 → docx 라이브러리로 Word 문서 생성 → FileSaver.js로 다운로드. 탭 모듈 패턴과 다른 독립 유틸리티 모듈
