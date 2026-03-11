@@ -39,6 +39,7 @@ if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
   <button class="tab-btn" data-tab="inventory">재고현황</button>
   <button class="tab-btn" data-tab="stats">구매실적</button>
   <button class="tab-btn" data-tab="notice">공지사항</button>
+  <button class="tab-btn" data-tab="user">사용자관리</button>
 </nav>
 
 <div class="content">
@@ -336,9 +337,64 @@ if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
   </div>
 </div>
 
+<!-- ==================== 사용자관리 ==================== -->
+<div class="tab-content" id="tab-user">
+  <div class="toolbar">
+    <div class="card-title" style="margin:0"><div class="icon"></div>사용자 관리</div>
+    <button class="btn btn-primary" onclick="showUserForm()">+ 사용자 등록</button>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card" id="userKpi1"><div class="kpi-label">전체 사용자</div><div class="kpi-value">0<small>명</small></div></div>
+    <div class="kpi-card accent" id="userKpi2"><div class="kpi-label">활성 사용자</div><div class="kpi-value">0<small>명</small></div></div>
+    <div class="kpi-card success" id="userKpi3"><div class="kpi-label">관리자</div><div class="kpi-value">0<small>명</small></div></div>
+    <div class="kpi-card warning" id="userKpi4"><div class="kpi-label">비활성 사용자</div><div class="kpi-value">0<small>명</small></div></div>
+  </div>
+
+  <div class="card">
+    <div style="overflow-x:auto">
+    <table>
+      <thead><tr><th>아이디</th><th>이름</th><th>부서</th><th>직급</th><th>이메일</th><th>연락처</th><th class="text-center">권한</th><th class="text-center">상태</th><th>등록일</th><th class="text-center">관리</th></tr></thead>
+      <tbody id="userTable"></tbody>
+    </table>
+    </div>
+    <div id="userPagination" class="pagination"></div>
+  </div>
+</div>
+
 </div>
 
 <!-- ==================== Modals ==================== -->
+
+<!-- User Form Modal -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('userModal')">&times;</button>
+    <div class="modal-title" id="userFormTitle">사용자 등록</div>
+    <div id="userForm" data-edit-id="">
+      <div class="form-row">
+        <div class="form-group"><label>아이디 <span style="color:var(--danger)">*</span></label><input id="userIdInput" type="text" placeholder="영문, 숫자, 밑줄" maxlength="30"></div>
+        <div class="form-group"><label>비밀번호 <span style="color:var(--danger)">*</span></label><input id="userPasswordInput" type="password" placeholder="비밀번호 입력" maxlength="50"></div>
+        <div class="form-group"><label>이름 <span style="color:var(--danger)">*</span></label><input id="userNameInput" type="text" placeholder="홍길동" maxlength="20"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>부서 <span style="color:var(--danger)">*</span></label><select id="userDeptInput"><option>원료기획팀</option><option>원료구매팀</option><option>생산관리팀</option><option>품질관리팀</option><option>경영기획팀</option><option>재무팀</option><option>IT팀</option></select></div>
+        <div class="form-group"><label>직급</label><select id="userPositionInput"><option>사원</option><option>대리</option><option>과장</option><option>차장</option><option>부장</option><option>이사</option></select></div>
+        <div class="form-group"><label>권한</label><select id="userRoleInput"><option value="user">일반 사용자</option><option value="admin">관리자</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>이메일</label><input id="userEmailInput" type="email" placeholder="user@dongkuk.com" maxlength="50"></div>
+        <div class="form-group"><label>연락처</label><input id="userPhoneInput" type="tel" placeholder="02-317-1000" maxlength="20"></div>
+        <div class="form-group"><label>상태</label><select id="userStatusInput"><option value="active">활성</option><option value="inactive">비활성</option></select></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="submitUser()">저장</button>
+      <button class="btn btn-outline" onclick="hideModal('userModal')">취소</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="orderModal">
   <div class="modal">
     <button class="modal-close" onclick="hideModal('orderModal')">&times;</button>
@@ -569,6 +625,7 @@ if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
 <script src="js/stats.js"></script>
 <script src="js/notice.js"></script>
 <script src="js/calendar.js"></script>
+<script src="js/user.js"></script>
 <script src="js/export-doc.js"></script>
 <script src="js/app.js"></script>
 </body>

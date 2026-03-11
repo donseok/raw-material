@@ -260,10 +260,36 @@ body::after {
 </div>
 
 <script>
-const USERS = {
-  dongkuk1: { password: '1234', name: '김철호 과장' },
-  dongkuk2: { password: '1234', name: '박영수 대리' }
+// Fallback users when localStorage has no registered data
+const FALLBACK_USERS = {
+  dongkuk1: { password: '1234', name: '김철호', position: '과장' },
+  dongkuk2: { password: '1234', name: '박영수', position: '대리' }
 };
+
+function getRegisteredUsers() {
+  try {
+    var raw = localStorage.getItem('usersData');
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    if (parsed && Array.isArray(parsed.data) && parsed.data.length > 0) return parsed.data;
+  } catch(e) {}
+  return null;
+}
+
+function findUser(id, pw) {
+  var registered = getRegisteredUsers();
+  if (registered) {
+    var user = registered.find(function(u) { return u.id === id && u.password === pw; });
+    if (user) {
+      if (user.status === 'inactive') return { blocked: true };
+      return { id: user.id, name: user.name + (user.position ? ' ' + user.position : ''), role: user.role };
+    }
+    return null;
+  }
+  var fb = FALLBACK_USERS[id];
+  if (fb && fb.password === pw) return { id: id, name: fb.name + ' ' + fb.position, role: 'admin' };
+  return null;
+}
 
 function handleLogin(e) {
   e.preventDefault();
@@ -285,8 +311,8 @@ function handleLogin(e) {
     return false;
   }
 
-  const user = USERS[id];
-  if (!user || user.password !== pw) {
+  const user = findUser(id, pw);
+  if (!user) {
     errorText.textContent = '아이디 또는 비밀번호가 일치하지 않습니다.';
     errorMsg.classList.add('show');
     card.classList.remove('shake');
@@ -297,7 +323,16 @@ function handleLogin(e) {
     return false;
   }
 
-  sessionStorage.setItem('loggedInUser', JSON.stringify({ id: id, name: user.name }));
+  if (user.blocked) {
+    errorText.textContent = '비활성화된 계정입니다. 관리자에게 문의하세요.';
+    errorMsg.classList.add('show');
+    card.classList.remove('shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    return false;
+  }
+
+  sessionStorage.setItem('loggedInUser', JSON.stringify({ id: user.id, name: user.name, role: user.role }));
 
   const btn = document.getElementById('loginBtn');
   btn.disabled = true;

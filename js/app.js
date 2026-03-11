@@ -3,9 +3,14 @@
 // Login user display
 (function() {
   try {
-    const user = JSON.parse(sessionStorage.getItem('loggedInUser'));
-    if (user && user.name) {
-      document.getElementById('userDisplay').textContent = '원료기획팀 | ' + user.name;
+    const session = JSON.parse(sessionStorage.getItem('loggedInUser'));
+    if (session && session.name) {
+      var dept = '원료기획팀';
+      if (typeof usersData !== 'undefined' && session.id) {
+        var found = usersData.find(function(u) { return u.id === session.id; });
+        if (found && found.dept) dept = found.dept;
+      }
+      document.getElementById('userDisplay').textContent = dept + ' | ' + session.name;
     }
   } catch(e) {}
 })();
@@ -150,6 +155,7 @@ loadSupplierDataFromStorage();
 loadImportDataFromStorage();
 loadNoticesFromStorage();
 loadSchedulesFromStorage();
+loadUsersFromStorage();
 
 initOrders();
 initSuppliers();
@@ -158,6 +164,7 @@ initInventory();
 initStats();
 initNotices();
 initCalendar();
+initUsers();
 renderPlanUI();
 renderAllocUI();
 renderPlanChart();

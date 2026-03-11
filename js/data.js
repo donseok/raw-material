@@ -7,7 +7,8 @@ const STORAGE_KEYS = Object.freeze({
   suppliers: 'suppliersData',
   imports: 'importsData',
   notices: 'noticesData',
-  schedules: 'schedulesData'
+  schedules: 'schedulesData',
+  users: 'usersData'
 });
 
 const defaultPlanData = [
@@ -104,6 +105,13 @@ const SCHEDULE_COLORS = {
 };
 const defaultSchedules = [];
 let schedulesData = cloneData(defaultSchedules);
+
+// ===== Users =====
+const defaultUsers = [
+  {id:'dongkuk1',password:'1234',name:'김철호',dept:'원료기획팀',position:'과장',email:'chkim@dongkuk.com',phone:'02-317-1001',role:'admin',status:'active',createdAt:'2026-01-01T00:00:00.000Z'},
+  {id:'dongkuk2',password:'1234',name:'박영수',dept:'원료기획팀',position:'대리',email:'yspark@dongkuk.com',phone:'02-317-1002',role:'user',status:'active',createdAt:'2026-01-01T00:00:00.000Z'},
+];
+let usersData = cloneData(defaultUsers);
 
 // ===== Stats =====
 const statsData = [
