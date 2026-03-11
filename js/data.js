@@ -75,6 +75,16 @@ const defaultImports = [
 ];
 let imports = cloneData(defaultImports);
 
+// ===== Notices =====
+const defaultNotices = [
+  {id:'N-default-001',title:'[필독] 2026년 철스크랩 수급계획 시스템 사용 안내',content:'본 시스템은 동국제강 철스크랩 수급 계획 및 구매 관리를 위한 시스템입니다.\n\n주요 기능:\n1. 수급계획 - 월별 수급계획 수립 및 실적 관리\n2. 공장배분 - 인천/포항 공장별 배분 계획\n3. 구매발주 - 국내 철스크랩 구매 발주 관리\n4. 업체관리 - 공급업체 정보 및 평가\n5. 수입계약 - 수입 철스크랩 계약 관리\n6. 재고현황 - 공장별/품종별 재고 모니터링\n7. 통계분석 - 구매 실적 분석\n\n문의: 원료기획팀',author:'관리자',password:'admin1234',pinned:true,createdAt:'2026-01-02T09:00:00.000Z'},
+  {id:'N-default-002',title:'[필독] 시스템 데이터 입력 가이드',content:'데이터 입력 시 참고사항:\n\n1. 수급계획/공장배분 탭은 엑셀에서 복사 후 붙여넣기(Ctrl+V)로 일괄 입력 가능합니다.\n2. 구매발주/수입계약은 모달 폼을 통해 개별 등록합니다.\n3. 모든 데이터는 자동 저장됩니다.\n4. 숫자 입력 시 콤마(,)는 자동 처리됩니다.',author:'관리자',password:'admin1234',pinned:true,createdAt:'2026-01-02T10:00:00.000Z'},
+  {id:'N-default-003',title:'3월 수급계획 회의 안내',content:'3월 수급계획 조정 회의가 아래와 같이 진행됩니다.\n\n일시: 2026년 3월 15일(월) 14:00\n장소: 본사 3층 대회의실\n참석: 원료기획팀 전원\n\n안건:\n- 3월 실적 점검\n- 4월 수급계획 확정\n- 수입 계약 검토',author:'김철수',password:'1234',pinned:false,createdAt:'2026-03-10T09:00:00.000Z'},
+  {id:'N-default-004',title:'포항공장 재고 점검 결과 공유',content:'2026년 3월 포항공장 재고 실사 결과를 공유드립니다.\n\n- 생철: 7,200톤 (적정)\n- 중량: 8,800톤 (적정)\n- 경량: 5,100톤 (부족 - 발주 필요)\n- 길로틴: 4,500톤 (부족 - 발주 필요)\n\n경량/길로틴 품종 추가 발주를 검토해주시기 바랍니다.',author:'박영희',password:'1234',pinned:false,createdAt:'2026-03-08T14:30:00.000Z'},
+  {id:'N-default-005',title:'일본 HMS1 시세 동향 공유',content:'최근 일본 HMS1 시세가 상승 추세에 있어 공유드립니다.\n\n- 2월 평균: $368/톤\n- 3월 초 현재: $372/톤\n- 전망: $375~380/톤 예상\n\n수입 계약 시 참고 바랍니다.',author:'이동환',password:'1234',pinned:false,createdAt:'2026-03-05T11:00:00.000Z'},
+];
+let noticesData = cloneData(defaultNotices);
+
 // ===== Inventory =====
 const inventory = [
   {plant:'인천',grade:'생철',cur:9800,opt:10000},{plant:'인천',grade:'중량',cur:12500,opt:12000},

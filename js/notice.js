@@ -1,6 +1,5 @@
 // ===== Notice Board Module =====
 
-let notices = [];
 var noticeCurrentPage = 1;
 var NOTICE_PAGE_SIZE = 10;
 
@@ -40,18 +39,39 @@ function normalizeNoticesData(data) {
 }
 
 // ===== Storage =====
+function getDefaultNoticeIds() {
+  return defaultNotices.map(function(n) { return n.id; });
+}
+
 function loadNoticesFromStorage() {
-  const saved = readStoredData(STORAGE_KEYS.notices, normalizeNoticesData);
-  if (saved) notices = saved;
+  var savedLocal = readStoredData(STORAGE_KEYS.notices, normalizeNoticesData);
+  var defaultIds = getDefaultNoticeIds();
+
+  // Start with default notices (shared with all users)
+  noticesData = cloneData(defaultNotices);
+
+  if (savedLocal) {
+    // Merge localStorage items that are NOT default (user-created)
+    savedLocal.forEach(function(item) {
+      if (defaultIds.indexOf(item.id) === -1) {
+        noticesData.push(item);
+      }
+    });
+  }
 }
 
 function saveNoticesData() {
-  writeStoredData(STORAGE_KEYS.notices, notices);
+  // Save only user-created notices to localStorage (not defaults)
+  var defaultIds = getDefaultNoticeIds();
+  var localOnly = noticesData.filter(function(n) {
+    return defaultIds.indexOf(n.id) === -1;
+  });
+  writeStoredData(STORAGE_KEYS.notices, localOnly);
 }
 
 // ===== Sort =====
 function sortNotices() {
-  notices.sort(function(a, b) {
+  noticesData.sort(function(a, b) {
     if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
     return new Date(b.createdAt) - new Date(a.createdAt);
   });
@@ -63,15 +83,15 @@ function renderNotices() {
   var pagination = document.getElementById('noticePagination');
   sortNotices();
 
-  if (notices.length === 0) {
+  if (noticesData.length === 0) {
     list.innerHTML = '<div class="notice-empty">등록된 공지사항이 없습니다.</div>';
     if (pagination) pagination.innerHTML = '';
     return;
   }
 
   // Separate pinned and normal notices
-  var pinnedItems = notices.filter(function(n) { return n.pinned; });
-  var normalItems = notices.filter(function(n) { return !n.pinned; });
+  var pinnedItems = noticesData.filter(function(n) { return n.pinned; });
+  var normalItems = noticesData.filter(function(n) { return !n.pinned; });
 
   // Paginate only normal (non-pinned) items
   var totalPages = Math.max(1, Math.ceil(normalItems.length / NOTICE_PAGE_SIZE));
@@ -128,7 +148,7 @@ function showNoticeForm(editId) {
   document.getElementById('noticePasswordHint').style.display = isEdit ? 'block' : 'none';
 
   if (isEdit) {
-    var notice = notices.find(function(n) { return n.id === editId; });
+    var notice = noticesData.find(function(n) { return n.id === editId; });
     if (!notice) return;
     document.getElementById('noticeTitle').value = notice.title;
     document.getElementById('noticeContent').value = notice.content;
@@ -160,7 +180,7 @@ function submitNotice() {
   if (!password) { showToast('비밀번호를 입력해주세요.', 'error'); return; }
 
   if (editId) {
-    var notice = notices.find(function(n) { return n.id === editId; });
+    var notice = noticesData.find(function(n) { return n.id === editId; });
     if (!notice) return;
     if (notice.password !== password) {
       showToast('비밀번호가 일치하지 않습니다.', 'error');
@@ -171,7 +191,7 @@ function submitNotice() {
     notice.author = author;
     notice.pinned = pinned;
   } else {
-    notices.push({
+    noticesData.push({
       id: generateNoticeId(),
       title: title,
       content: content,
@@ -190,7 +210,7 @@ function submitNotice() {
 
 // ===== View Detail =====
 function viewNotice(id) {
-  var notice = notices.find(function(n) { return n.id === id; });
+  var notice = noticesData.find(function(n) { return n.id === id; });
   if (!notice) return;
 
   var date = new Date(notice.createdAt).toLocaleDateString('ko-KR', {
@@ -228,15 +248,15 @@ function confirmDeleteNotice() {
 
   if (!password) { showToast('비밀번호를 입력해주세요.', 'error'); return; }
 
-  var idx = notices.findIndex(function(n) { return n.id === id; });
+  var idx = noticesData.findIndex(function(n) { return n.id === id; });
   if (idx === -1) return;
 
-  if (notices[idx].password !== password) {
+  if (noticesData[idx].password !== password) {
     showToast('비밀번호가 일치하지 않습니다.', 'error');
     return;
   }
 
-  notices.splice(idx, 1);
+  noticesData.splice(idx, 1);
   saveNoticesData();
   renderNotices();
   hideModal('noticeDeleteModal');
