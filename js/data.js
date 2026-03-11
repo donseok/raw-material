@@ -6,7 +6,8 @@ const STORAGE_KEYS = Object.freeze({
   orders: 'ordersData',
   suppliers: 'suppliersData',
   imports: 'importsData',
-  notices: 'noticesData'
+  notices: 'noticesData',
+  schedules: 'schedulesData'
 });
 
 const defaultPlanData = [
@@ -94,6 +95,15 @@ const inventory = [
   {plant:'포항',grade:'경량',cur:5100,opt:6000},{plant:'포항',grade:'길로틴',cur:4500,opt:5000},
   {plant:'포항',grade:'선반',cur:2800,opt:3000},{plant:'포항',grade:'압축',cur:2000,opt:2000},
 ];
+
+// ===== Schedules =====
+const SCHEDULE_TYPES = ['오전반차','오후반차','반반차1','반반차2','반반차3','반반차4','휴가','교육','출장','외근'];
+const SCHEDULE_COLORS = {
+  '오전반차':'#42a5f5','오후반차':'#1565c0','반반차1':'#7e57c2','반반차2':'#ab47bc','반반차3':'#8d6e63','반반차4':'#78909c',
+  '휴가':'#ef5350','교육':'#66bb6a','출장':'#ffa726','외근':'#26a69a'
+};
+const defaultSchedules = [];
+let schedulesData = cloneData(defaultSchedules);
 
 // ===== Stats =====
 const statsData = [

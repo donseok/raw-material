@@ -149,6 +149,7 @@ loadOrderDataFromStorage();
 loadSupplierDataFromStorage();
 loadImportDataFromStorage();
 loadNoticesFromStorage();
+loadSchedulesFromStorage();
 
 initOrders();
 initSuppliers();
@@ -156,6 +157,7 @@ initImports();
 initInventory();
 initStats();
 initNotices();
+initCalendar();
 renderPlanUI();
 renderAllocUI();
 renderPlanChart();
