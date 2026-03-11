@@ -108,6 +108,18 @@ tr:hover { background: #e8eaf6; }
 .toast.error { background: #c62828; color: white; }
 .toast.info { background: var(--primary); color: white; }
 
+/* ===== Notice Board ===== */
+.notice-empty { text-align: center; padding: 48px 20px; color: var(--text-light); font-size: 14px; }
+.notice-pinned { background: #fff8e1 !important; }
+.notice-pinned:hover { background: #fff3cd !important; }
+.notice-title-cell { font-weight: 600; color: var(--primary-dark); }
+.notice-detail-title { font-size: 20px; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; }
+.notice-detail-meta { font-size: 13px; color: var(--text-light); margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; gap: 8px; }
+.notice-detail-content { font-size: 14px; line-height: 1.8; white-space: pre-wrap; min-height: 80px; color: var(--text); }
+.form-group textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--gray-300); border-radius: 8px; font-size: 13px; font-family: inherit; resize: vertical; min-height: 120px; transition: border-color 0.2s; }
+.form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,35,126,0.1); }
+.field-hint { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
 /* ===== Save Indicator ===== */
 .save-indicator { font-size: 11px; color: var(--success); background: #e8f5e9; padding: 3px 10px; border-radius: 12px; display: none; align-items: center; gap: 4px; }
 .save-indicator.show { display: inline-flex; }

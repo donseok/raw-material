@@ -38,6 +38,7 @@ if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
   <button class="tab-btn" data-tab="import">수입계약</button>
   <button class="tab-btn" data-tab="inventory">재고현황</button>
   <button class="tab-btn" data-tab="stats">구매실적</button>
+  <button class="tab-btn" data-tab="notice">공지사항</button>
 </nav>
 
 <div class="content">
@@ -297,6 +298,18 @@ if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
   </div>
 </div>
 
+<!-- ==================== 공지사항 ==================== -->
+<div class="tab-content" id="tab-notice">
+  <div class="toolbar">
+    <div class="card-title" style="margin:0"><div class="icon"></div>공지사항</div>
+    <button class="btn btn-primary" onclick="showNoticeForm()">+ 등록</button>
+  </div>
+
+  <div class="card">
+    <div id="noticeList"></div>
+  </div>
+</div>
+
 </div>
 
 <!-- ==================== Modals ==================== -->
@@ -404,6 +417,63 @@ if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
   </div>
 </div>
 
+<!-- Notice Form Modal (Create / Edit) -->
+<div class="modal-overlay" id="noticeFormModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('noticeFormModal')">&times;</button>
+    <div class="modal-title" id="noticeFormTitle">공지사항 등록</div>
+    <div id="noticeForm" data-edit-id="">
+      <div class="form-group"><label>제목 <span style="color:var(--danger)">*</span></label><input id="noticeTitle" type="text" placeholder="공지 제목을 입력하세요" maxlength="100"></div>
+      <div class="form-group"><label>내용</label><textarea id="noticeContent" placeholder="공지 내용을 입력하세요" rows="6"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>작성자 <span style="color:var(--danger)">*</span></label><input id="noticeAuthor" type="text" placeholder="이름" maxlength="20"></div>
+        <div class="form-group"><label>비밀번호 <span style="color:var(--danger)">*</span></label><input id="noticePassword" type="password" placeholder="수정/삭제 시 필요"><div id="noticePasswordHint" class="field-hint" style="display:none">기존 비밀번호를 입력해주세요</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin:0;font-size:13px;font-weight:400">
+          <input id="noticePinned" type="checkbox" style="margin:0;width:16px;height:16px"> <span class="badge badge-red">필독</span> 상단 고정
+        </label>
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="submitNotice()">저장</button>
+      <button class="btn btn-outline" onclick="hideModal('noticeFormModal')">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notice View Modal -->
+<div class="modal-overlay" id="noticeViewModal">
+  <div class="modal">
+    <button class="modal-close" onclick="hideModal('noticeViewModal')">&times;</button>
+    <div style="margin-bottom:16px">
+      <span id="viewNoticePinned" class="badge badge-red" style="margin-bottom:8px;display:none">필독</span>
+      <div class="notice-detail-title" id="viewNoticeTitle"></div>
+      <div class="notice-detail-meta" id="viewNoticeMeta"></div>
+    </div>
+    <div class="notice-detail-content" id="viewNoticeContent"></div>
+    <div id="viewNoticeActions" data-notice-id="" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="promptEditNotice()">수정</button>
+      <button class="btn btn-danger btn-sm" onclick="promptDeleteNotice()">삭제</button>
+      <button class="btn btn-outline btn-sm" style="margin-left:auto" onclick="hideModal('noticeViewModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notice Delete Confirm Modal -->
+<div class="modal-overlay" id="noticeDeleteModal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="hideModal('noticeDeleteModal')">&times;</button>
+    <div class="modal-title">공지사항 삭제</div>
+    <p style="font-size:14px;color:var(--text);margin-bottom:16px">삭제하려면 게시글 비밀번호를 입력하세요.</p>
+    <div class="form-group"><label>비밀번호</label><input id="deletePassword" type="password" placeholder="비밀번호 입력"></div>
+    <div id="deleteNoticeConfirm" data-notice-id="" style="display:flex;gap:8px">
+      <button class="btn btn-danger" onclick="confirmDeleteNotice()">삭제</button>
+      <button class="btn btn-outline" onclick="hideModal('noticeDeleteModal')">취소</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== Scripts (load order matters) ===== -->
 <script src="js/utils.js"></script>
 <script src="js/data.js"></script>
@@ -414,6 +484,7 @@ if (!sessionStorage.getItem('loggedInUser')) { location.href = 'login.html'; }
 <script src="js/import.js"></script>
 <script src="js/inventory.js"></script>
 <script src="js/stats.js"></script>
+<script src="js/notice.js"></script>
 <script src="js/export-doc.js"></script>
 <script src="js/app.js"></script>
 </body>
