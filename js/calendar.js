@@ -2,11 +2,60 @@
 
 var calendarYear = new Date().getFullYear();
 var calendarMonth = new Date().getMonth(); // 0-based
+var MULTI_DAY_TYPES = ['휴가', '교육', '출장'];
+
+function generateScheduleId() {
+  return 'SCH-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+}
+
+// ===== API =====
+function fetchSchedules(callback) {
+  fetch('/api/schedules')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      schedulesData = Array.isArray(data) ? data : [];
+      if (callback) callback();
+    })
+    .catch(function() {
+      // Fallback to defaultSchedules if API fails
+      schedulesData = cloneData(defaultSchedules);
+      if (callback) callback();
+    });
+}
+
+function apiAddSchedule(schedule, callback) {
+  fetch('/api/schedules', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(schedule)
+  })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      schedulesData = Array.isArray(data) ? data : schedulesData;
+      if (callback) callback(true);
+    })
+    .catch(function() { if (callback) callback(false); });
+}
+
+function apiDeleteSchedule(id, callback) {
+  fetch('/api/schedules', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: id })
+  })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      schedulesData = Array.isArray(data) ? data : schedulesData;
+      if (callback) callback(true);
+    })
+    .catch(function() { if (callback) callback(false); });
+}
 
 // ===== Init =====
 function initCalendar() {
-  schedulesData = cloneData(defaultSchedules);
-  renderCalendar();
+  fetchSchedules(function() {
+    renderCalendar();
+  });
 }
 
 // ===== Calendar Rendering =====
@@ -22,7 +71,6 @@ function renderCalendar() {
   var today = new Date();
   var todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
 
-  // Build schedule map for the month
   var daySchedules = {};
   for (var d = 1; d <= daysInMonth; d++) {
     var dateStr = calendarYear + '-' + String(calendarMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
@@ -101,7 +149,7 @@ function showDaySchedules(year, month, day) {
   if (dayItems.length === 0) {
     listEl.innerHTML = '<div class="notice-empty" style="padding:24px">등록된 일정이 없습니다.</div>';
   } else {
-    var html = '<table><thead><tr><th>팀원</th><th>구분</th><th>기간</th></tr></thead><tbody>';
+    var html = '<table><thead><tr><th>팀원</th><th>구분</th><th>기간</th><th style="width:50px"></th></tr></thead><tbody>';
     dayItems.forEach(function(sch) {
       var color = SCHEDULE_COLORS[sch.type] || '#9e9e9e';
       var period = sch.startDate === sch.endDate ? sch.startDate : sch.startDate + ' ~ ' + sch.endDate;
@@ -109,6 +157,7 @@ function showDaySchedules(year, month, day) {
       html += '<td>' + escapeHtml(sch.member) + '</td>';
       html += '<td><span class="badge" style="background:' + color + '22;color:' + color + '">' + escapeHtml(sch.type) + '</span></td>';
       html += '<td style="font-size:12px">' + period + '</td>';
+      html += '<td><button class="btn btn-danger btn-sm" style="padding:2px 8px;font-size:11px" onclick="deleteSchedule(\'' + sch.id + '\')">삭제</button></td>';
       html += '</tr>';
     });
     html += '</tbody></table>';
@@ -116,4 +165,73 @@ function showDaySchedules(year, month, day) {
   }
 
   showModal('scheduleDetailModal');
+}
+
+// ===== Form =====
+function toggleEndDateGroup() {
+  var type = document.getElementById('scheduleType').value;
+  var group = document.getElementById('scheduleEndDateGroup');
+  if (!group) return;
+  if (MULTI_DAY_TYPES.indexOf(type) !== -1) {
+    group.style.display = '';
+  } else {
+    group.style.display = 'none';
+    document.getElementById('scheduleEndDate').value = '';
+  }
+}
+
+function showScheduleForm() {
+  document.getElementById('scheduleMember').value = '';
+  document.getElementById('scheduleType').value = '';
+  document.getElementById('scheduleStartDate').value = '';
+  document.getElementById('scheduleEndDate').value = '';
+  document.getElementById('scheduleEndDateGroup').style.display = 'none';
+  showModal('scheduleFormModal');
+}
+
+function submitSchedule() {
+  var member = document.getElementById('scheduleMember').value;
+  var type = document.getElementById('scheduleType').value;
+  var startDate = document.getElementById('scheduleStartDate').value;
+  var useEndDate = MULTI_DAY_TYPES.indexOf(type) !== -1;
+  var endDate = useEndDate ? (document.getElementById('scheduleEndDate').value || startDate) : startDate;
+
+  if (!member) { showToast('팀원을 선택해주세요.', 'error'); return; }
+  if (!type) { showToast('구분을 선택해주세요.', 'error'); return; }
+  if (!startDate) { showToast('시작일을 입력해주세요.', 'error'); return; }
+  if (useEndDate && endDate < startDate) { showToast('종료일은 시작일 이후여야 합니다.', 'error'); return; }
+
+  var schedule = {
+    id: generateScheduleId(),
+    member: member,
+    type: type,
+    startDate: startDate,
+    endDate: endDate,
+    memo: ''
+  };
+
+  showToast('일정 등록 중...', 'info');
+  apiAddSchedule(schedule, function(ok) {
+    if (ok) {
+      renderCalendar();
+      hideModal('scheduleFormModal');
+      showToast('일정이 등록되었습니다.', 'success');
+    } else {
+      showToast('일정 등록에 실패했습니다.', 'error');
+    }
+  });
+}
+
+// ===== Delete =====
+function deleteSchedule(id) {
+  showToast('일정 삭제 중...', 'info');
+  apiDeleteSchedule(id, function(ok) {
+    if (ok) {
+      renderCalendar();
+      hideModal('scheduleDetailModal');
+      showToast('일정이 삭제되었습니다.', 'success');
+    } else {
+      showToast('일정 삭제에 실패했습니다.', 'error');
+    }
+  });
 }
