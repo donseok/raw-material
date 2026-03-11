@@ -23,7 +23,7 @@
 
 ### 1.2 파일 구조
 
-```
+````
 raw-material/
 ├── login.html              # 로그인 페이지
 ├── index.html              # 대시보드 메인 페이지
