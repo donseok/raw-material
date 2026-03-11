@@ -1,6 +1,8 @@
 // ===== Notice Board Module =====
 
 let notices = [];
+var noticeCurrentPage = 1;
+var NOTICE_PAGE_SIZE = 10;
 
 function generateNoticeId() {
   return 'N-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
@@ -58,15 +60,32 @@ function sortNotices() {
 // ===== Render =====
 function renderNotices() {
   var list = document.getElementById('noticeList');
+  var pagination = document.getElementById('noticePagination');
   sortNotices();
 
   if (notices.length === 0) {
     list.innerHTML = '<div class="notice-empty">등록된 공지사항이 없습니다.</div>';
+    if (pagination) pagination.innerHTML = '';
     return;
   }
 
+  // Separate pinned and normal notices
+  var pinnedItems = notices.filter(function(n) { return n.pinned; });
+  var normalItems = notices.filter(function(n) { return !n.pinned; });
+
+  // Paginate only normal (non-pinned) items
+  var totalPages = Math.max(1, Math.ceil(normalItems.length / NOTICE_PAGE_SIZE));
+  if (noticeCurrentPage > totalPages) noticeCurrentPage = totalPages;
+  if (noticeCurrentPage < 1) noticeCurrentPage = 1;
+
+  var startIdx = (noticeCurrentPage - 1) * NOTICE_PAGE_SIZE;
+  var pageNormalItems = normalItems.slice(startIdx, startIdx + NOTICE_PAGE_SIZE);
+
+  // Render: pinned always on top + paginated normal items
+  var displayItems = pinnedItems.concat(pageNormalItems);
+
   var html = '<table><thead><tr><th style="width:70px" class="text-center">구분</th><th>제목</th><th style="width:100px">작성자</th><th style="width:110px">작성일</th></tr></thead><tbody>';
-  notices.forEach(function(n) {
+  displayItems.forEach(function(n) {
     var date = new Date(n.createdAt).toLocaleDateString('ko-KR');
     var pinnedBadge = n.pinned ? '<span class="badge badge-red">필독</span>' : '';
     html += '<tr class="notice-row' + (n.pinned ? ' notice-pinned' : '') + '" onclick="viewNotice(\'' + n.id + '\')" style="cursor:pointer">';
@@ -78,6 +97,22 @@ function renderNotices() {
   });
   html += '</tbody></table>';
   list.innerHTML = html;
+
+  // Pagination (always show)
+  if (pagination) {
+    var pagHtml = '';
+    pagHtml += '<button class="pagination-btn' + (noticeCurrentPage === 1 ? ' disabled' : '') + '"' + (noticeCurrentPage === 1 ? ' disabled' : ' onclick="goNoticePage(' + (noticeCurrentPage - 1) + ')"') + '>&laquo;</button>';
+    for (var p = 1; p <= totalPages; p++) {
+      pagHtml += '<button class="pagination-btn' + (p === noticeCurrentPage ? ' active' : '') + '" onclick="goNoticePage(' + p + ')">' + p + '</button>';
+    }
+    pagHtml += '<button class="pagination-btn' + (noticeCurrentPage === totalPages ? ' disabled' : '') + '"' + (noticeCurrentPage === totalPages ? ' disabled' : ' onclick="goNoticePage(' + (noticeCurrentPage + 1) + ')"') + '>&raquo;</button>';
+    pagination.innerHTML = pagHtml;
+  }
+}
+
+function goNoticePage(page) {
+  noticeCurrentPage = page;
+  renderNotices();
 }
 
 // ===== Init =====
