@@ -149,7 +149,6 @@ loadOrderDataFromStorage();
 loadSupplierDataFromStorage();
 loadImportDataFromStorage();
 loadNoticesFromStorage();
-loadSchedulesFromStorage();
 
 initOrders();
 initSuppliers();
