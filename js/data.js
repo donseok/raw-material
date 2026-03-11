@@ -6,7 +6,8 @@ const STORAGE_KEYS = Object.freeze({
   orders: 'ordersData',
   suppliers: 'suppliersData',
   imports: 'importsData',
-  notices: 'noticesData'
+  notices: 'noticesData',
+  schedules: 'schedulesData'
 });
 
 const defaultPlanData = [

@@ -8,66 +8,65 @@ function generateScheduleId() {
   return 'SCH-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
 }
 
-// ===== API =====
-function fetchSchedules(callback) {
-  fetch('/api/schedules')
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      schedulesData = Array.isArray(data) ? data : [];
-      if (callback) callback();
-    })
-    .catch(function() {
-      // Fallback to defaultSchedules if API fails
-      schedulesData = cloneData(defaultSchedules);
-      if (callback) callback();
-    });
+// ===== Normalize =====
+function normalizeSchedule(item) {
+  if (!item || typeof item !== 'object') return null;
+  if (!item.id || !item.member || !item.type || !item.startDate) return null;
+  if (SCHEDULE_TYPES.indexOf(item.type) === -1) return null;
+  return {
+    id: String(item.id),
+    member: String(item.member).trim(),
+    type: String(item.type),
+    startDate: String(item.startDate),
+    endDate: String(item.endDate || item.startDate),
+    memo: String(item.memo || '').trim()
+  };
 }
 
-function apiAddSchedule(schedule, callback) {
-  fetch('/api/schedules', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(schedule)
-  })
-    .then(function(res) {
-      if (!res.ok) return res.json().then(function(e) { throw new Error(e.error || res.status); });
-      return res.json();
-    })
-    .then(function(data) {
-      schedulesData = Array.isArray(data) ? data : schedulesData;
-      if (callback) callback(true);
-    })
-    .catch(function(err) {
-      showToast('오류: ' + (err.message || '서버 연결 실패'), 'error');
-      if (callback) callback(false);
-    });
+function normalizeSchedulesArray(data) {
+  if (!Array.isArray(data)) return null;
+  var result = [];
+  for (var i = 0; i < data.length; i++) {
+    var s = normalizeSchedule(data[i]);
+    if (s) result.push(s);
+  }
+  return result;
 }
 
-function apiDeleteSchedule(id, callback) {
-  fetch('/api/schedules', {
-    method: 'DELETE',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: id })
-  })
-    .then(function(res) {
-      if (!res.ok) return res.json().then(function(e) { throw new Error(e.error || res.status); });
-      return res.json();
-    })
-    .then(function(data) {
-      schedulesData = Array.isArray(data) ? data : schedulesData;
-      if (callback) callback(true);
-    })
-    .catch(function(err) {
-      showToast('오류: ' + (err.message || '서버 연결 실패'), 'error');
-      if (callback) callback(false);
+// ===== Storage (same pattern as notices) =====
+function getDefaultScheduleIds() {
+  return defaultSchedules.map(function(s) { return s.id; });
+}
+
+function loadSchedulesFromStorage() {
+  var saved = readStoredData(STORAGE_KEYS.schedules, normalizeSchedulesArray);
+  var defaultIds = getDefaultScheduleIds();
+
+  // Start with default schedules (shared with all users)
+  schedulesData = cloneData(defaultSchedules);
+
+  if (saved) {
+    // Merge localStorage items that are NOT default (user-created)
+    saved.forEach(function(item) {
+      if (defaultIds.indexOf(item.id) === -1) {
+        schedulesData.push(item);
+      }
     });
+  }
+}
+
+function saveSchedulesData() {
+  // Save only user-created schedules to localStorage (not defaults)
+  var defaultIds = getDefaultScheduleIds();
+  var localOnly = schedulesData.filter(function(s) {
+    return defaultIds.indexOf(s.id) === -1;
+  });
+  writeStoredData(STORAGE_KEYS.schedules, localOnly);
 }
 
 // ===== Init =====
 function initCalendar() {
-  fetchSchedules(function() {
-    renderCalendar();
-  });
+  renderCalendar();
 }
 
 // ===== Calendar Rendering =====
@@ -213,37 +212,34 @@ function submitSchedule() {
   if (!startDate) { showToast('시작일을 입력해주세요.', 'error'); return; }
   if (useEndDate && endDate < startDate) { showToast('종료일은 시작일 이후여야 합니다.', 'error'); return; }
 
-  var schedule = {
+  var schedule = normalizeSchedule({
     id: generateScheduleId(),
     member: member,
     type: type,
     startDate: startDate,
     endDate: endDate,
     memo: ''
-  };
-
-  showToast('일정 등록 중...', 'info');
-  apiAddSchedule(schedule, function(ok) {
-    if (ok) {
-      renderCalendar();
-      hideModal('scheduleFormModal');
-      showToast('일정이 등록되었습니다.', 'success');
-    } else {
-      showToast('일정 등록에 실패했습니다.', 'error');
-    }
   });
+
+  if (!schedule) {
+    showToast('일정 정보를 올바르게 입력해주세요.', 'error');
+    return;
+  }
+
+  schedulesData.push(schedule);
+  saveSchedulesData();
+  renderCalendar();
+  hideModal('scheduleFormModal');
+  showToast('일정이 등록되었습니다.', 'success');
 }
 
 // ===== Delete =====
 function deleteSchedule(id) {
-  showToast('일정 삭제 중...', 'info');
-  apiDeleteSchedule(id, function(ok) {
-    if (ok) {
-      renderCalendar();
-      hideModal('scheduleDetailModal');
-      showToast('일정이 삭제되었습니다.', 'success');
-    } else {
-      showToast('일정 삭제에 실패했습니다.', 'error');
-    }
-  });
+  var idx = schedulesData.findIndex(function(s) { return s.id === id; });
+  if (idx === -1) return;
+  schedulesData.splice(idx, 1);
+  saveSchedulesData();
+  renderCalendar();
+  hideModal('scheduleDetailModal');
+  showToast('일정이 삭제되었습니다.', 'success');
 }
