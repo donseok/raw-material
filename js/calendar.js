@@ -29,12 +29,18 @@ function apiAddSchedule(schedule, callback) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(schedule)
   })
-    .then(function(res) { return res.json(); })
+    .then(function(res) {
+      if (!res.ok) return res.json().then(function(e) { throw new Error(e.error || res.status); });
+      return res.json();
+    })
     .then(function(data) {
       schedulesData = Array.isArray(data) ? data : schedulesData;
       if (callback) callback(true);
     })
-    .catch(function() { if (callback) callback(false); });
+    .catch(function(err) {
+      showToast('오류: ' + (err.message || '서버 연결 실패'), 'error');
+      if (callback) callback(false);
+    });
 }
 
 function apiDeleteSchedule(id, callback) {
@@ -43,12 +49,18 @@ function apiDeleteSchedule(id, callback) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id: id })
   })
-    .then(function(res) { return res.json(); })
+    .then(function(res) {
+      if (!res.ok) return res.json().then(function(e) { throw new Error(e.error || res.status); });
+      return res.json();
+    })
     .then(function(data) {
       schedulesData = Array.isArray(data) ? data : schedulesData;
       if (callback) callback(true);
     })
-    .catch(function() { if (callback) callback(false); });
+    .catch(function(err) {
+      showToast('오류: ' + (err.message || '서버 연결 실패'), 'error');
+      if (callback) callback(false);
+    });
 }
 
 // ===== Init =====
